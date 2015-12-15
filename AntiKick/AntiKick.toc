@@ -1,0 +1,16 @@
+## Interface: 60200
+## Title: AntiKick
+## Version: 1.0.0
+## Author: Resike
+## Notes: Ban thoose pesky kick botters!
+## DefaultState: Enabled
+## SavedVariables: AntiKickDB
+
+Localizations\Localizations.lua
+
+AntiKick.lua
+
+Widgets\CheckButton.lua
+Widgets\DropDown.lua
+Widgets\EditBox.lua
+Widgets\Slider.lua
