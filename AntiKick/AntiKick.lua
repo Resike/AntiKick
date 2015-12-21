@@ -188,6 +188,10 @@ end
 
 function AntiKick:GetUnitFromGUID(GUID)
 	if IsInRaid() then
+		if UnitGUID("player") == GUID then
+			return "player"
+		end
+
 		for i = 1, GetNumGroupMembers() do
 			local unit = "raid"..i
 			if UnitGUID(unit) == GUID then
@@ -263,6 +267,10 @@ function AntiKick:RemoveCastInfo(unit, spellID)
 	end
 
 	local unitGUID = UnitGUID(unit)
+
+	if not self.dbp["Casts"][unitGUID] then
+		return
+	end
 
 	if self.dbp["Casts"][unitGUID] and self.dbp["Casts"][unitGUID].spellID and self.dbp["Casts"][unitGUID].spellID == spellID then
 		self.dbp["Casts"][unitGUID] = nil
@@ -342,12 +350,18 @@ function AntiKick:COMBAT_LOG_EVENT_UNFILTERED(timeStamp, eventType, hideCaster, 
 
 		local unit = self:GetUnitFromGUID(sourceGUID)
 
-		self:RemoveCastInfo(unit, spellID)
+		if UnitGUID(unit) ~= UnitGUID("player") then
+			self:RemoveCastInfo(unit, spellID)
+		end
 	elseif eventType == "SPELL_INTERRUPT" then
+		if not CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_HOSTILE_PLAYERS) and not CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_HOSTILE_UNITS) then
+			return
+		end
+
 		local spellID, spellName, spellSchool, extraSpellID, extraSpellName, extraSpellSchool = ...
 
 		if not self.dbp["Casts"][destGUID] then
-			--print("Missing cast.")
+			--print("Missing cast.", destName, destGUID)
 			return
 		end
 
@@ -429,12 +443,12 @@ function AntiKick:UNIT_SPELLCAST_DELAYED(unit, spellName, _, cast, spellID)
 
 	--local unit = self:GetUnitFromGUID(UnitGUID(unit))
 
-	if unit and not UnitIsCharmed(unit) then
+	--[[if unit and not UnitIsCharmed(unit) then
 		--print(self.dbp["Casts"][UnitGUID(unit)].endTime - self.dbp["Casts"][UnitGUID(unit)].startTime)
 		--local time = self.dbp["Casts"][UnitGUID(unit)].endTime
-		self:UpdateCastInfo(unit, name, spellID, startTime, endTime)
+		--self:UpdateCastInfo(unit, name, spellID, startTime, endTime)
 		--print(UnitName(unit), name, "delay:", self.dbp["Casts"][UnitGUID(unit)].endTime - time, "ms")
-	end
+	end]]
 end
 
 --[[function AntiKick:UNIT_SPELLCAST_SUCCEEDED(unit, spellName, _, cast, spellID)
@@ -462,6 +476,10 @@ end]]
 	print(self.target, ...)
 end)
 
-hooksecurefunc("HelpFrame_ShowReportCheatingDialog", function(self)
-	print(self)
+hooksecurefunc("HelpFrame_ShowReportCheatingDialog", function(self, ...)
+	print(self, ...)
+end)
+
+hooksecurefunc("SetPendingReportTarget", function(self, ...)
+	print(self, ...)
 end)]]
